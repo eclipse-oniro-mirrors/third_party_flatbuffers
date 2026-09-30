@@ -15,7 +15,7 @@ class Test {
 
     @BeforeAll
     func writeTable0() {
-        bytes = File.readFrom("./test.buf")
+        bytes = File.readFrom("./union.buf")
     }
 
     @TestCase

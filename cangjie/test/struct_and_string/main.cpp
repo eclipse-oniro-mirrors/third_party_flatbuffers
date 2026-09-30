@@ -14,7 +14,7 @@ int main() {
     size_t buffer_size = fbb.GetSize();
     const uint8_t* buffer = fbb.GetBufferPointer();
 
-    auto file_path = "./test.buf";
+    auto file_path = "./struct_and_string.buf";
     std::ofstream out_file(file_path, std::ios::out | std::ios::binary);
     out_file.write(reinterpret_cast<const char*>(buffer), buffer_size);
     out_file.close();

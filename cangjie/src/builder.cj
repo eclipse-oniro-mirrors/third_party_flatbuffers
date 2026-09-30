@@ -4,7 +4,7 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package std.ast
+package flatbuffers
 
 import std.collection.{HashMap, ArrayList}
 
@@ -13,7 +13,7 @@ const INITIAL_VTABLE_NUM = 16
 /*
  * Builder manages an Array<UInt8> in which stores vtable representing fbs table.
  */
-class Builder {
+public class Builder {
     private var bytes: Array<UInt8>                     // byte array to store vtable.
     private var minAlign: Int64                         // current alignment rule.
     private var currentVtable: ArrayList<UInt32>       // memory object of current table.
@@ -24,7 +24,7 @@ class Builder {
     private var finished: Bool                          // if the byte array is finished.
     private var sharedStrings: HashMap<String, UInt32>  // map of created strings.
 
-    init(initialSize: Int64) {
+    public init(initialSize: Int64) {
         let size = if (initialSize <= 0) {
             0
         } else {
@@ -44,7 +44,7 @@ class Builder {
     /*
      * Reset builder.
      */
-    func reset() {
+    public func reset() {
         // Reset to full capacity
         this.bytes.fill(0)
         this.offsetsOfVtables.clear()
@@ -59,7 +59,7 @@ class Builder {
     /*
      * Returns used part of byte array.
      */
-    func finishedBytes(): Array<UInt8> {
+    public func finishedBytes(): Array<UInt8> {
         this.assertFinished()
         this.bytes[Int64(this.head)..]
     }
@@ -67,7 +67,7 @@ class Builder {
     /*
      * Start a new vtable for a table object.
      */
-    func startObject(numFields: Int64): Unit {
+    public func startObject(numFields: Int64): Unit {
         this.assertNotNested()
         this.nested = true
 
@@ -155,7 +155,7 @@ class Builder {
     /*
      * Finish object construction.
      */
-    func endObject(): UInt32 {
+    public func endObject(): UInt32 {
         this.assertNested()
         let n = this.writeVtable()
         this.nested = false
@@ -191,14 +191,14 @@ class Builder {
         this.head
     }
 
-    func offset(): UInt32 {
+    public func offset(): UInt32 {
         return UInt32(this.bytes.size) - this.head
     }
 
     /*
      * Places zeros at the current offset.
      */
-    func pad(n: Int64): Unit {
+    public func pad(n: Int64): Unit {
         for (_ in 0..n) {
             this.placeUInt8(0)
         }
@@ -207,7 +207,7 @@ class Builder {
     /*
      * Pre-allocate bytes needed.
      */
-    func prep(size: Int64, additionalBytes: Int64): Unit {
+    public func prep(size: Int64, additionalBytes: Int64): Unit {
         // Track the biggest thing we've ever aligned to
         if (size > this.minAlign) {
             this.minAlign = size
@@ -241,7 +241,7 @@ class Builder {
     /*
      * Prepends an unsigned offset for future table field finding.
      */
-    func prependUOffsetT(off: UInt32): Unit {
+    public func prependUOffsetT(off: UInt32): Unit {
         this.prep(SIZE_UOFFSET_T, 0)
         if (!(off <= this.offset())) {
             throw FlatBuffersException("unreachable: off <= offset()")
@@ -253,7 +253,7 @@ class Builder {
     /*
      * Start a new vector of struct or primitive types.
      */
-    func startVector(elemSize: Int64, numElems: Int64, alignment: Int64): UInt32 {
+    public func startVector(elemSize: Int64, numElems: Int64, alignment: Int64): UInt32 {
         this.assertNotNested()
         this.nested = true
         this.prep(SIZE_UINT32, elemSize * numElems)
@@ -265,7 +265,7 @@ class Builder {
     /*
      * Finish vector construction.
      */
-    func endVector(vectorNumElems: Int64): UInt32 {
+    public func endVector(vectorNumElems: Int64): UInt32 {
         this.assertNested()
         this.placeUInt32(UInt32(vectorNumElems))
         this.nested = false
@@ -275,7 +275,7 @@ class Builder {
     /*
      * Start a new vector of tables and store their offsets.
      */
-    func createVectorOfTables(offsets: Array<UInt32>): UInt32 {
+    public func createVectorOfTables(offsets: Array<UInt32>): UInt32 {
         this.assertNotNested()
         this.startVector(4, offsets.size, 4)
         for (i in offsets.size - 1..=0 : -1) {
@@ -287,7 +287,7 @@ class Builder {
     /*
      * Returns offset of existing identical string or create a new one.
      */
-    func createSharedString(s: String): UInt32 {
+    public func createSharedString(s: String): UInt32 {
         if (this.sharedStrings.contains(s)) {
             return this.sharedStrings[s]
         }
@@ -299,7 +299,7 @@ class Builder {
     /*
      * Create a string and return its offset.
      */
-    func createString(s: String): UInt32 {
+    public func createString(s: String): UInt32 {
         this.assertNotNested()
         this.nested = true
 
@@ -319,7 +319,7 @@ class Builder {
     /*
      * Create a byte string and return its offset.
      */
-    func createByteString(s: Array<UInt8>): UInt32 {
+    public func createByteString(s: Array<UInt8>): UInt32 {
         this.assertNotNested()
         this.nested = true
 
@@ -338,7 +338,7 @@ class Builder {
     /*
      * Create a byte vector and return its offset.
      */
-    func createByteVector(v: Array<UInt8>): UInt32 {
+    public func createByteVector(v: Array<UInt8>): UInt32 {
         this.assertNotNested()
         this.nested = true
 
@@ -356,7 +356,7 @@ class Builder {
     /*
      * Create an Int32 vector and return its offset.
      */
-    func createInt32Vector(v: Array<Int32>): UInt32 {
+    public func createInt32Vector(v: Array<Int32>): UInt32 {
         this.assertNotNested()
         this.startVector(4, v.size, 4)
         for (i in v.size - 1..=0 : -1) {
@@ -368,7 +368,7 @@ class Builder {
     /*
      * Create a UInt32 vector and return its offset.
      */
-    func createUInt32Vector(v: Array<UInt32>): UInt32 {
+    public func createUInt32Vector(v: Array<UInt32>): UInt32 {
         this.assertNotNested()
         this.startVector(4, v.size, 4)
         for (i in v.size - 1..=0 : -1) {
@@ -380,7 +380,7 @@ class Builder {
     /*
      * Create a UInt64 vector and return its offset.
      */
-    func createUInt64Vector(v: Array<UInt64>): UInt32 {
+    public func createUInt64Vector(v: Array<UInt64>): UInt32 {
         this.assertNotNested()
         this.startVector(8, v.size, 8)
         for (i in v.size - 1..=0 : -1) {
@@ -416,7 +416,7 @@ class Builder {
         }
     }
 
-    func prependBoolSlot(o: Int64, x: Bool, default: Bool): Unit {
+    public func prependBoolSlot(o: Int64, x: Bool, default: Bool): Unit {
         let val: UInt8 = if (x) {
             1
         } else {
@@ -430,84 +430,84 @@ class Builder {
         this.prependUInt8Slot(o, val, def)
     }
 
-    func prependUInt8Slot(o: Int64, x: UInt8, default: UInt8): Unit {
+    public func prependUInt8Slot(o: Int64, x: UInt8, default: UInt8): Unit {
         if (x != default) {
             this.prependUInt8(x)
             this.slot(o)
         }
     }
 
-    func prependUInt16Slot(o: Int64, x: UInt16, default: UInt16): Unit {
+    public func prependUInt16Slot(o: Int64, x: UInt16, default: UInt16): Unit {
         if (x != default) {
             this.prependUInt16(x)
             this.slot(o)
         }
     }
 
-    func prependUInt32Slot(o: Int64, x: UInt32, default: UInt32): Unit {
+    public func prependUInt32Slot(o: Int64, x: UInt32, default: UInt32): Unit {
         if (x != default) {
             this.prependUInt32(x)
             this.slot(o)
         }
     }
 
-    func prependUInt64Slot(o: Int64, x: UInt64, default: UInt64): Unit {
+    public func prependUInt64Slot(o: Int64, x: UInt64, default: UInt64): Unit {
         if (x != default) {
             this.prependUInt64(x)
             this.slot(o)
         }
     }
 
-    func prependInt8Slot(o: Int64, x: Int8, default: Int8): Unit {
+    public func prependInt8Slot(o: Int64, x: Int8, default: Int8): Unit {
         if (x != default) {
             this.prependInt8(x)
             this.slot(o)
         }
     }
 
-    func prependInt16Slot(o: Int64, x: Int16, default: Int16): Unit {
+    public func prependInt16Slot(o: Int64, x: Int16, default: Int16): Unit {
         if (x != default) {
             this.prependInt16(x)
             this.slot(o)
         }
     }
 
-    func prependInt32Slot(o: Int64, x: Int32, default: Int32): Unit {
+    public func prependInt32Slot(o: Int64, x: Int32, default: Int32): Unit {
         if (x != default) {
             this.prependInt32(x)
             this.slot(o)
         }
     }
 
-    func prependInt64Slot(o: Int64, x: Int64, default: Int64): Unit {
+    public func prependInt64Slot(o: Int64, x: Int64, default: Int64): Unit {
         if (x != default) {
             this.prependInt64(x)
             this.slot(o)
         }
     }
 
-    func prependFloat32Slot(o: Int64, x: Float32, default: Float32): Unit {
+    public func prependFloat32Slot(o: Int64, x: Float32, default: Float32): Unit {
         if (x != default) {
             this.prependFloat32(x)
             this.slot(o)
         }
     }
 
-    func prependFloat64Slot(o: Int64, x: Float64, default: Float64): Unit {
+    public func prependFloat64Slot(o: Int64, x: Float64, default: Float64): Unit {
         if (x != default) {
             this.prependFloat64(x)
             this.slot(o)
         }
     }
 
-    func prependUOffsetTSlot(o: Int64, x: UInt32, default: UInt32): Unit {
+    public func prependUOffsetTSlot(o: Int64, x: UInt32, default: UInt32): Unit {
         if (x != default) {
             this.prependUOffsetT(x)
             this.slot(o)
         }
     }
 
-    func prependStructSlot(voffset: Int64, x: UInt32, default: UInt32): Unit {
+    public func prependStructSlot(voffset: Int64, x: UInt32, default: UInt32): Unit {
         if (x != default) {
             this.assertNested()
             if (x != this.offset()) {
@@ -531,7 +531,7 @@ class Builder {
     /*
      * Finalizes byte array for root table with a file identifier.
      */
-    func finishWithFileIdentifier(rootTable: UInt32, fid: Array<UInt8>): Unit {
+    public func finishWithFileIdentifier(rootTable: UInt32, fid: Array<UInt8>): Unit {
         if (fid.size != FILE_IDENTIFIER_LENGTH) {
             throw FlatBuffersException("incorrect file identifier length")
         }
@@ -545,14 +545,14 @@ class Builder {
     /*
      * Finalizes byte array for root table with a prefix representing size of array.
      */
-    func finishSizePrefixed(rootTable: UInt32): Unit {
+    public func finishSizePrefixed(rootTable: UInt32): Unit {
         this.finishInternal(rootTable, true)
     }
 
     /*
      * Finalizes byte array for root table with a prefix representing size of array and file identifier.
      */
-    func finishSizePrefixedWithFileIdentifier(rootTable: UInt32, fid: Array<UInt8>): Unit {
+    public func finishSizePrefixedWithFileIdentifier(rootTable: UInt32, fid: Array<UInt8>): Unit {
         if (fid.size != FILE_IDENTIFIER_LENGTH) {
             throw FlatBuffersException("incorrect file identifier length")
         }
@@ -566,7 +566,7 @@ class Builder {
     /*
      * Finalizes byte array for root table.
      */
-    func finish(rootTable: UInt32): Unit {
+    public func finish(rootTable: UInt32): Unit {
         this.finishInternal(rootTable, false)
     }
 
@@ -591,57 +591,57 @@ class Builder {
         this.finished = true
     }
 
-    func prependBool(x: Bool): Unit {
+    public func prependBool(x: Bool): Unit {
         this.prep(SIZE_BOOL, 0)
         this.placeBool(x)
     }
 
-    func prependUInt8(x: UInt8): Unit {
+    public func prependUInt8(x: UInt8): Unit {
         this.prep(SIZE_UINT8, 0)
         this.placeUInt8(x)
     }
 
-    func prependUInt16(x: UInt16): Unit {
+    public func prependUInt16(x: UInt16): Unit {
         this.prep(SIZE_UINT16, 0)
         this.placeUInt16(x)
     }
 
-    func prependUInt32(x: UInt32): Unit {
+    public func prependUInt32(x: UInt32): Unit {
         this.prep(SIZE_UINT32, 0)
         this.placeUInt32(x)
     }
 
-    func prependUInt64(x: UInt64): Unit {
+    public func prependUInt64(x: UInt64): Unit {
         this.prep(SIZE_UINT64, 0)
         this.placeUInt64(x)
     }
 
-    func prependInt8(x: Int8): Unit {
+    public func prependInt8(x: Int8): Unit {
         this.prep(SIZE_INT8, 0)
         this.placeInt8(x)
     }
 
-    func prependInt16(x: Int16): Unit {
+    public func prependInt16(x: Int16): Unit {
         this.prep(SIZE_INT16, 0)
         this.placeInt16(x)
     }
 
-    func prependInt32(x: Int32): Unit {
+    public func prependInt32(x: Int32): Unit {
         this.prep(SIZE_INT32, 0)
         this.placeInt32(x)
     }
 
-    func prependInt64(x: Int64): Unit {
+    public func prependInt64(x: Int64): Unit {
         this.prep(SIZE_INT64, 0)
         this.placeInt64(x)
     }
 
-    func prependFloat32(x: Float32): Unit {
+    public func prependFloat32(x: Float32): Unit {
         this.prep(SIZE_FLOAT32, 0)
         this.placeFloat32(x)
     }
 
-    func prependFloat64(x: Float64): Unit {
+    public func prependFloat64(x: Float64): Unit {
         this.prep(SIZE_FLOAT64, 0)
         this.placeFloat64(x)
     }

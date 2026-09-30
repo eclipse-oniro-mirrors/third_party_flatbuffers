@@ -4,13 +4,13 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package std.ast
+package flatbuffers
 
-class FlatBuffersException <: Exception {
-    init() {
+public class FlatBuffersException <: Exception {
+    public init() {
         super()
     }
-    init(message: String) {
+    public init(message: String) {
         super(message)
     }
     protected override func getClassName(): String {
