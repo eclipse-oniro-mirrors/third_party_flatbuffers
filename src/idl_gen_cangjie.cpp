@@ -170,7 +170,12 @@ public:
         code_ += "// " + std::string(FlatBuffersGeneratedWarning());
         code_ += "// cangjielint:disable all\n";
         code_ += "// cangjieformat:disable all\n";
-        code_ += "package std.ast";
+        const std::string cj_package = GetCangjiePackageName();
+        code_ += "package " + cj_package;
+        // Generated tables depend on the shared flatbuffers runtime package.
+        if (cj_package != "flatbuffers") {
+            code_ += "import flatbuffers.*";
+        }
         code_ += "";
 
         // Generate code for all the enum declarations.
@@ -1275,6 +1280,20 @@ public:
     }
 
     std::string Name(const Definition& def) const { return EscapeKeyword(MakeCamel(def.name, false)); }
+
+    // The .fbs namespace is used as the Cangjie package name. Build scripts that
+    // install the generated code into an existing package (e.g. std.ast,
+    // stdx.chir, stdx.syntax) override it with --cangjie-package.
+    std::string GetCangjiePackageName() const
+    {
+        if (!parser_.opts.cangjie_package.empty()) {
+            return parser_.opts.cangjie_package;
+        }
+        if (parser_.current_namespace_ && !parser_.current_namespace_->components.empty()) {
+            return FullNamespace(".", *parser_.current_namespace_);
+        }
+        return file_name_;
+    }
 };
 } // namespace cangjie
 

@@ -165,6 +165,9 @@ const static FlatCOption flatc_options[] = {
     "\"github.com/google/flatbuffers/go\")." },
   { "", "go-module-name", "",
     "Prefix local import paths of generated go code with the module name" },
+  { "", "cangjie-package", "PACKAGE",
+    "Generate the overriding package name in Cangjie. Default Value is the "
+    "schema namespace." },
   { "", "raw-binary", "",
     "Allow binaries without file_identifier to be read. This may crash flatc "
     "given a mismatched schema." },
@@ -491,6 +494,9 @@ FlatCOptions FlatCompiler::ParseFromCommandLineArguments(int argc,
       } else if (arg == "--go-module-name") {
         if (++argi >= argc) Error("missing golang module name" + arg, true);
         opts.go_module_name = argv[argi];
+      } else if (arg == "--cangjie-package") {
+        if (++argi >= argc) Error("missing cangjie package name" + arg, true);
+        opts.cangjie_package = argv[argi];
       } else if (arg == "--defaults-json") {
         opts.output_default_scalars_in_json = true;
       } else if (arg == "--unknown-json") {

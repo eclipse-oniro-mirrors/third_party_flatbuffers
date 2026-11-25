@@ -4,9 +4,9 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
  
-package std.ast
+package flatbuffers
 public open class FlatBufferObject {
-    let table: Table
+    public let table: Table
 
     public init(buf: Array<UInt8>, root: UInt32) {
         let offset: UInt32 = if (buf.size > Int64(root) + 4) {

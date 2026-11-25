@@ -682,6 +682,7 @@ struct IDLOptions {
   std::string go_import;
   std::string go_namespace;
   std::string go_module_name;
+  std::string cangjie_package;
   bool protobuf_ascii_alike;
   bool size_prefixed;
   std::string root_type;

@@ -4,7 +4,7 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package std.ast
+package flatbuffers
 
 const SIZE_UINT8 = 1
 
